@@ -1,0 +1,72 @@
+﻿<Window x:Class="WpfApp1.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:models="clr-namespace:WpfApp1.Models"
+        Title="Список товаров" Height="600" Width="800">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <ItemsControl x:Name="ProductList">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate DataType="{x:Type models:Товары}">
+                    <Border BorderBrush="Black" BorderThickness="1"
+                            Margin="10,10,10,0" Padding="10">
+                        <DockPanel>
+
+                            <Border DockPanel.Dock="Right" BorderBrush="Black"
+                                    BorderThickness="1" Width="130" Margin="15,0,0,0">
+                                <Border.Style>
+                                    <Style TargetType="Border">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Скидка}" Value="{x:Null}">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Скидка}" Value="0">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Border.Style>
+                                <StackPanel VerticalAlignment="Center">
+                                    <TextBlock Text="Действующая скидка" TextAlignment="Center" FontSize="12"/>
+                                    <TextBlock Text="{Binding Скидка, StringFormat={}{0}%}"
+                                               FontWeight="Bold" FontSize="20"
+                                               Foreground="Red" TextAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+
+          
+                            <StackPanel>
+                                <TextBlock FontWeight="Bold" FontSize="15" Margin="0,0,0,8">
+                                    <Run Text="{Binding ВкКатегорииNavigation.Наименование}"/>
+                                    <Run Text=" | "/>
+                                    <Run Text="{Binding Артикул}"/>
+                                </TextBlock>
+
+                                <TextBlock>
+                                    <Run Text="Описание товара: " FontWeight="SemiBold"/>
+                                    <Run Text="{Binding Описание}"/>
+                                </TextBlock>
+                                <TextBlock>
+                                    <Run Text="Производитель: " FontWeight="SemiBold"/>
+                                    <Run Text="{Binding ВкПроизводителиNavigation.Наименование}"/>
+                                </TextBlock>
+                                <TextBlock>
+                                    <Run Text="Поставщик: " FontWeight="SemiBold"/>
+                                    <Run Text="{Binding ВкПоставщикиNavigation.Наименование}"/>
+                                </TextBlock>
+                                <TextBlock>
+                                    <Run Text="Цена: " FontWeight="SemiBold"/>
+                                    <Run Text="{Binding Цена, StringFormat={}{0:F2} руб.}"/>
+                                </TextBlock>
+                                <TextBlock>
+                                    <Run Text="Количество на складе: " FontWeight="SemiBold"/>
+                                    <Run Text="{Binding НаСкладе}"/>
+                                </TextBlock>
+                            </StackPanel>
+                        </DockPanel>
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+    </ScrollViewer>
+</Window>
