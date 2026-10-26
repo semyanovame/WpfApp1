@@ -4,69 +4,102 @@
         xmlns:models="clr-namespace:WpfApp1.Models"
         Title="Список товаров" Height="600" Width="800">
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <ItemsControl x:Name="ProductList">
-            <ItemsControl.ItemTemplate>
-                <DataTemplate DataType="{x:Type models:Товары}">
-                    <Border BorderBrush="Black" BorderThickness="1"
-                            Margin="10,10,10,0" Padding="10">
-                        <DockPanel>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
 
-                            <Border DockPanel.Dock="Right" BorderBrush="Black"
-                                    BorderThickness="1" Width="130" Margin="15,0,0,0">
-                                <Border.Style>
-                                    <Style TargetType="Border">
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding Скидка}" Value="{x:Null}">
-                                                <Setter Property="Visibility" Value="Collapsed"/>
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding Скидка}" Value="0">
-                                                <Setter Property="Visibility" Value="Collapsed"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Border.Style>
-                                <StackPanel VerticalAlignment="Center">
-                                    <TextBlock Text="Действующая скидка" TextAlignment="Center" FontSize="12"/>
-                                    <TextBlock Text="{Binding Скидка, StringFormat={}{0}%}"
-                                               FontWeight="Bold" FontSize="20"
-                                               Foreground="Red" TextAlignment="Center"/>
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="10">
+            <TextBlock Text="Поиск:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+            <TextBox x:Name="BoxFind" Width="200" Height="24"
+                     TextChanged="BoxFind_TextChanged"
+                     VerticalContentAlignment="Center"/>
+
+            <TextBlock Text="Поставщик:" VerticalAlignment="Center" Margin="15,0,5,0"/>
+            <ComboBox x:Name="ComboSuppliers" Width="180" Height="24"
+                      SelectionChanged="ComboSuppliers_SelectionChanged"/>
+
+            <TextBlock Text="Сортировка:" VerticalAlignment="Center" Margin="15,0,5,0"/>
+            <RadioButton x:Name="RadioUpp" Content="По возрастанию" Tag="Asc"
+                         Checked="RadioSort_Checked" VerticalAlignment="Center"/>
+            <RadioButton x:Name="RadioDown" Content="По убыванию" Tag="Desc"
+                         Checked="RadioSort_Checked" Margin="10,0,0,0"
+                         VerticalAlignment="Center"/>
+        </StackPanel>
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+            <ItemsControl x:Name="ProductList">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type models:Товары}">
+                        <Border BorderBrush="Black" BorderThickness="1"
+                                Margin="10,0,10,10" Padding="10" Background="White">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel MouseLeftButtonDown="CardProduct_Click"
+                                    Grid.Column="0">
+                                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                        <TextBlock Text="{Binding ВкКатегорииNavigation.Наименование}"
+                                                   FontWeight="Bold" FontSize="15"/>
+                                        <TextBlock Text=" | " FontWeight="Bold" FontSize="15"/>
+                                        <TextBlock Text="{Binding Артикул}"
+                                                   FontWeight="Bold" FontSize="15"/>
+                                    </StackPanel>
+
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="Описание товара: " FontWeight="SemiBold"/>
+                                        <TextBlock Text="{Binding Описание}"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="Производитель: " FontWeight="SemiBold"/>
+                                        <TextBlock Text="{Binding ВкПроизводителиNavigation.Наименование}"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="Поставщик: " FontWeight="SemiBold"/>
+                                        <TextBlock Text="{Binding ВкПоставщикиNavigation.Наименование}"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="Цена: " FontWeight="SemiBold"/>
+                                        <TextBlock Text="{Binding Цена, StringFormat={}{0:F2} руб.}"
+                                                   FontWeight="Bold"/>
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="Количество на складе: " FontWeight="SemiBold"/>
+                                        <TextBlock Text="{Binding НаСкладе}"/>
+                                    </StackPanel>
                                 </StackPanel>
-                            </Border>
 
-          
-                            <StackPanel>
-                                <TextBlock FontWeight="Bold" FontSize="15" Margin="0,0,0,8">
-                                    <Run Text="{Binding ВкКатегорииNavigation.Наименование}"/>
-                                    <Run Text=" | "/>
-                                    <Run Text="{Binding Артикул}"/>
-                                </TextBlock>
-
-                                <TextBlock>
-                                    <Run Text="Описание товара: " FontWeight="SemiBold"/>
-                                    <Run Text="{Binding Описание}"/>
-                                </TextBlock>
-                                <TextBlock>
-                                    <Run Text="Производитель: " FontWeight="SemiBold"/>
-                                    <Run Text="{Binding ВкПроизводителиNavigation.Наименование}"/>
-                                </TextBlock>
-                                <TextBlock>
-                                    <Run Text="Поставщик: " FontWeight="SemiBold"/>
-                                    <Run Text="{Binding ВкПоставщикиNavigation.Наименование}"/>
-                                </TextBlock>
-                                <TextBlock>
-                                    <Run Text="Цена: " FontWeight="SemiBold"/>
-                                    <Run Text="{Binding Цена, StringFormat={}{0:F2} руб.}"/>
-                                </TextBlock>
-                                <TextBlock>
-                                    <Run Text="Количество на складе: " FontWeight="SemiBold"/>
-                                    <Run Text="{Binding НаСкладе}"/>
-                                </TextBlock>
-                            </StackPanel>
-                        </DockPanel>
-                    </Border>
-                </DataTemplate>
-            </ItemsControl.ItemTemplate>
-        </ItemsControl>
-    </ScrollViewer>
+                                <Border Grid.Column="1" BorderBrush="Black" BorderThickness="1"
+                                        Width="130" Margin="15,0,0,0">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Скидка}" Value="{x:Null}">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Скидка}" Value="0">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                                        <TextBlock Text="Действующая" HorizontalAlignment="Center" FontSize="12"/>
+                                        <TextBlock Text="скидка" HorizontalAlignment="Center" FontSize="12" Margin="0,0,0,5"/>
+                                        <TextBlock Text="{Binding Скидка, StringFormat={}{0}%}"
+                                                   FontWeight="Bold" FontSize="20"
+                                                   Foreground="Red" HorizontalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+    </Grid>
 </Window>

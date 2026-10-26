@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
@@ -9,102 +10,106 @@ namespace WpfApp1
 {
     public partial class MainWindow : Window
     {
-        private List<Товары> products = new();    
+
+        private List<Товары> _allProducts = new();
         private string _sortParam = "";
         private string _supplierFilter = "Все поставщики";
+
         public MainWindow()
         {
             InitializeComponent();
             LoadData();
             LoadSuppliers();
+        }
 
-            private void LoadData() 
+        private void LoadData()
+        {
+            using (var context = new AppDbContext())
             {
-                using (var context = new AppDbContext())
-            
-                {
-                    var products = context.Товары
-                                        .Include(p => p.ВкКатегорииNavigation)
-                                        .Include(p => p.ВкПроизводителиNavigation)
-                                        .Include(p => p.ВкПоставщикиNavigation)
-                                        .ToList();
-
-                    ApplyFilterAndSort();   
-                }  
+                _allProducts = context.Товары
+                    .Include(p => p.ВкКатегорииNavigation)
+                    .Include(p => p.ВкПроизводителиNavigation)
+                    .Include(p => p.ВкПоставщикиNavigation)
+                    .ToList();
             }
-            private void LoadSuppliers()
-            {
-                var suppliers = products
+            ApplyFilterAndSort();
+        }
+
+        private void LoadSuppliers()
+        {
+            var suppliers = _allProducts
                 .Select(p => p.ВкПоставщикиNavigation.Наименование)
                 .Where(n => !string.IsNullOrEmpty(n))
                 .Distinct()
                 .OrderBy(n => n)
                 .ToList();
-            }
-             private void RadioUpp_Checked(object sender, RoutedEventArgs e)
-        {
-            RadioButton radio = sender as RadioButton;
 
-            if (radio.Content.ToString() == "по возрастанию")
-            {
-                SortParam = "по возрастанию";
-            }
-            else if (radio.Content.ToString() == "по убыванию")
-            {
-                SortParam = "по убыванию";
-            }
-            Sort();
+            suppliers.Insert(0, "Все поставщики");
+            ComboSuppliers.ItemsSource = suppliers;
+            ComboSuppliers.SelectedIndex = 0;
         }
-        //Фильтрация
+
+        private void BoxFind_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            ApplyFilterAndSort();
+        }
+
         private void ComboSuppliers_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            ComboBox box = sender as ComboBox;
-            if (box.SelectedItem != null)
+            if (ComboSuppliers.SelectedItem is string selected)
             {
-                List<string> conv = box.SelectedItem.ToString().Split().ToList();
-
-                FiltParam = box.SelectedItem.ToString();
+                _supplierFilter = selected;
+                ApplyFilterAndSort();
             }
-            Sort();
         }
-        public void Sort()
+
+        private void RadioSort_Checked(object sender, RoutedEventArgs e)
         {
-            products = context.Products.Include(q => q.Supplier)
-                .Include(q => q.Manufacturer)
-                .Include(q => q.Name)
-                .Include(q => q.Category)
-                .ToList();
-            //фильтрация
-            try
+            if (sender is RadioButton radio && radio.Tag is string tag)
             {
-                products = products.Where(q =>
-                (q.Description?.Contains(BoxFind.Text) ?? false)
-                || (q.Article?.Contains(BoxFind.Text) ?? false)
-                || (q.Name?.Name?.Contains(BoxFind.Text) ?? false)
-                ).Where(q => q.Discount >= Convert.ToDouble(FiltParam.Split().ToList()[0]) && q.Discount <= Convert.ToDouble(FiltParam.Split().ToList()[1])).ToList();
+                _sortParam = tag;
+                ApplyFilterAndSort();
             }
-            catch
-            {
-                products = products.Where(q =>
-                (q.Description?.Contains(BoxFind.Text) ?? false)
-                || (q.Article?.Contains(BoxFind.Text) ?? false)
-                || (q.Name?.Name?.Contains(BoxFind.Text) ?? false)
-                ).Where(q => FiltParam == "все диапазоны").ToList();
-            }
-            //сортировка по цене
-            if (SortParam == "по возрастанию")
-            {
-                products = products.OrderBy(q => (q.Price / 100) * (100 - q.Discount)).ToList();
-            }
-            else if (SortParam == "по убыванию")
-            {
-                products = products.OrderByDescending(q => (q.Price / 100) * (100 - q.Discount)).ToList();
-            }
-            //сортировка по количеству на складе 
-
-            DrawProductItem(products);
         }
 
-    }
+        private void ApplyFilterAndSort()
+        {
+            if (ProductList == null) return;
+
+            IEnumerable<Товары> query = _allProducts;
+
+            string search = BoxFind?.Text?.Trim() ?? "";
+            if (!string.IsNullOrEmpty(search))
+            {
+                query = query.Where(p =>
+                    (p.Описание?.Contains(search, System.StringComparison.OrdinalIgnoreCase) ?? false) ||
+                    (p.Артикул?.Contains(search, System.StringComparison.OrdinalIgnoreCase) ?? false) ||
+                    (p.Наименование?.Contains(search, System.StringComparison.OrdinalIgnoreCase) ?? false));
+            }
+
+            if (!string.IsNullOrEmpty(_supplierFilter) && _supplierFilter != "Все поставщики")
+            {
+                query = query.Where(p =>
+                    p.ВкПоставщикиNavigation?.Наименование == _supplierFilter);
+            }
+
+            if (_sortParam == "Asc")    
+            {
+                query = query.OrderBy(p => (p.Цена ?? 0) * (100 - (p.Скидка ?? 0)) / 100);
+            }
+            else if (_sortParam == "Desc")
+            {
+                query = query.OrderByDescending(p => (p.Цена ?? 0) * (100 - (p.Скидка ?? 0)) / 100);
+            }
+
+            ProductList.ItemsSource = query.ToList();
+        }
+
+        private void CardProduct_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+
+            WindowEditing windowEditing = new WindowEditing();
+            windowEditing.ShowDialog(); 
+        }
     }
 }
